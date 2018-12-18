@@ -1,0 +1,27 @@
+sudo: required
+services: 
+  - docker
+
+before_install: 
+  - docker build -t sadabdevops/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run sadabdevops/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t sadabdevops/multi-client ./client
+  - docker build -t sadabdevops/multi-nginx ./nginx
+  - docker build -t sadabdevops/multi-server ./server
+  - docker build -t sadabdevops/multi-worker ./worker
+  # login to docker CLI
+
+  echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take these above images and push them to docker hub
+
+  docker push sadabdevops/multi-client
+  docker push sadabdevops/multi-nginx
+  docker push sadabdevops/multi-server
+  docker push sadabdevops/multi-worker
+
+  
+
